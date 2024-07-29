@@ -1,38 +1,48 @@
 package pers.yanhqz.widevine_id;
 
+import android.media.MediaDrm;
+
 import androidx.annotation.NonNull;
 
+import java.util.UUID;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
 
-/** WidevineIdPlugin */
-public class WidevineIdPlugin implements FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private MethodChannel channel;
+/**
+ * WidevineIdPlugin
+ */
+public class WidevineIdPlugin implements FlutterPlugin, Messages.WidevineId {
 
-  @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "widevine_id");
-    channel.setMethodCallHandler(this);
-  }
-
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else {
-      result.notImplemented();
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        Messages.WidevineId.setUp(flutterPluginBinding.getBinaryMessenger(), this);
     }
-  }
 
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-  }
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    }
+
+    @NonNull
+    @Override
+    public String id() {
+        /*
+         * UUID for the Widevine DRM scheme.
+         * find it in https://github.com/google/ExoPlayer/blob/b1000940eaec9e1202d9abf341a48a58b728053f/library/common/src/main/java/com/google/android/exoplayer2/C.java#L767
+         * <p>
+         * Widevine is supported on Android devices running Android 4.3 (API Level 18) and up.
+         */
+        try {
+            final UUID WIDEVINE_UUID = new UUID(0xEDEF8BA979D64ACEL, 0xA3C827DCD51D21EDL);
+            //noinspection resource
+            MediaDrm mediaDrm = new MediaDrm(WIDEVINE_UUID);
+            byte[] widevineId = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
+            StringBuilder sb = new StringBuilder();
+            for (byte aByte : widevineId) {
+                sb.append(String.format("%02x", aByte));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
 }
