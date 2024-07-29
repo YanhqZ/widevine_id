@@ -1,63 +1,51 @@
-// import 'package:flutter/material.dart';
-// import 'dart:async';
-//
-// import 'package:flutter/services.dart';
-// import 'package:widevine_id/widevine_id.dart';
-//
-// void main() {
-//   runApp(const MyApp());
-// }
-//
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-//
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-//
-// class _MyAppState extends State<MyApp> {
-//   String _platformVersion = 'Unknown';
-//   final _widevineIdPlugin = WidevineId();
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     initPlatformState();
-//   }
-//
-//   // Platform messages are asynchronous, so we initialize in an async method.
-//   Future<void> initPlatformState() async {
-//     String platformVersion;
-//     // Platform messages may fail, so we use a try/catch PlatformException.
-//     // We also handle the message potentially returning null.
-//     try {
-//       platformVersion =
-//           await _widevineIdPlugin.getPlatformVersion() ?? 'Unknown platform version';
-//     } on PlatformException {
-//       platformVersion = 'Failed to get platform version.';
-//     }
-//
-//     // If the widget was removed from the tree while the asynchronous platform
-//     // message was in flight, we want to discard the reply rather than calling
-//     // setState to update our non-existent appearance.
-//     if (!mounted) return;
-//
-//     setState(() {
-//       _platformVersion = platformVersion;
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         appBar: AppBar(
-//           title: const Text('Plugin example app'),
-//         ),
-//         body: Center(
-//           child: Text('Running on: $_platformVersion\n'),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'package:flutter/material.dart';
+import 'package:widevine_id/widevine_id.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
+        ),
+        body: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(24),
+          child: FutureBuilder<String>(
+              future: WidevineId().id(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData) {
+                  return Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: 'Widevine Id: \n',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        TextSpan(
+                          text: snapshot.requireData,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+        ),
+      ),
+    );
+  }
+}
