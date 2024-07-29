@@ -1,7 +1,7 @@
 name: widevine_id
-description: "A new Flutter project."
-version: 0.0.1
-homepage:
+description: "A Flutter plugin to access Widevine ID in Android platform."
+version: 1.0.0
+homepage: https://github.com/YanhqZ/widevine_id
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
